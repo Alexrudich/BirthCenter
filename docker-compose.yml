@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  birthcenter.api:
+    image: ${DOCKER_REGISTRY-}birthcenterapi
+    build:
+      context: .
+      dockerfile: BirthCenter.API/Dockerfile
+    container_name: birthcenter_api
+    depends_on:
+      - postgres
+    networks:
+      - birthcenter_network
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    container_name: birthcenter_postgres
+    environment:
+      POSTGRES_DB: birthcenter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - birthcenter_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  birthcenter_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
