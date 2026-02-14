@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BirthCenter.Domain", "Birth
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BirthCenter.Infrastructure", "BirthCenter.Infrastructure\BirthCenter.Infrastructure.csproj", "{43F417FC-CC67-4014-B3AB-AA7DE95D6BF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BirthCenter.Shared", "BirthCenter.Shared\BirthCenter.Shared.csproj", "{191B2BFF-E060-4510-87D9-1313529D334A}"
-EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CDCEBA44-C621-4395-95D3-4C0A6BA39A86}"
@@ -80,18 +78,6 @@ Global
 		{43F417FC-CC67-4014-B3AB-AA7DE95D6BF2}.Release|x64.Build.0 = Release|Any CPU
 		{43F417FC-CC67-4014-B3AB-AA7DE95D6BF2}.Release|x86.ActiveCfg = Release|Any CPU
 		{43F417FC-CC67-4014-B3AB-AA7DE95D6BF2}.Release|x86.Build.0 = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|x64.Build.0 = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Debug|x86.Build.0 = Debug|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|x64.ActiveCfg = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|x64.Build.0 = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|x86.ActiveCfg = Release|Any CPU
-		{191B2BFF-E060-4510-87D9-1313529D334A}.Release|x86.Build.0 = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|x64.ActiveCfg = Debug|Any CPU
