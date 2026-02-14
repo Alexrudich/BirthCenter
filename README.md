@@ -121,8 +121,8 @@ POST /api/Patients
 {
   "name": {
     "use": "official",
-    "family": "Ivanov",
-    "given": ["Ivan", "Ivanovich"]
+    "family": "Иванов",
+    "given": ["Иван", "Иванович"]
   },
   "gender": "male",
   "birthDate": "2024-01-13T18:25:43",
@@ -135,8 +135,8 @@ POST /api/Patients
 PUT /api/Patients/{id}
 {
   "name": {
-    "family": "Petrov",
-    "given": ["Petr", "Petrovich"],
+    "family": "Петров",
+    "given": ["Петр", "Петрович"],
     "use": "official"
   },
   "active": false
@@ -155,14 +155,6 @@ dotnet run
 ```bash
 dotnet test
 ```
-
-## 📝 License
-
-This project is created for evaluation purposes as a test assignment.
-
-## 👨‍💻 Author
-
-[Your Name]
 
 ---
 
