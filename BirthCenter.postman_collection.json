@@ -1,0 +1,294 @@
+﻿{
+  "info": {
+    "name": "BirthCenter API",
+    "description": "Collection for testing BirthCenter API with FHIR-compliant date search",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "📊 Seed Data",
+      "item": [
+        {
+          "name": "Generate 100 test patients",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Seed/generate",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Seed", "generate" ]
+            }
+          }
+        },
+        {
+          "name": "Get patient count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Seed/count",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Seed", "count" ]
+            }
+          }
+        },
+        {
+          "name": "Clear all patients",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Seed/clear",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Seed", "clear" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Patients CRUD",
+      "item": [
+        {
+          "name": "Create patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"use\": \"official\",\n    \"family\": \"Ivanov\",\n    \"given\": [\"Ivan\", \"Ivanovich\"]\n  },\n  \"gender\": \"male\",\n  \"birthDate\": \"2024-01-13T18:25:43\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients" ]
+            }
+          }
+        },
+        {
+          "name": "Get all patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients" ]
+            }
+          }
+        },
+        {
+          "name": "Get patient by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/{{patientId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "{{patientId}}" ]
+            }
+          }
+        },
+        {
+          "name": "Update patient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"family\": \"Petrov\",\n    \"given\": [\"Petr\", \"Petrovich\"],\n    \"use\": \"official\"\n  },\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/{{patientId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "{{patientId}}" ]
+            }
+          }
+        },
+        {
+          "name": "Delete patient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/{{patientId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "{{patientId}}" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Date Search (FHIR)",
+      "item": [
+        {
+          "name": "Search by exact date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=2024-01-13",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "2024-01-13"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by year",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=2024",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "2024"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by year-month",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=2024-01",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "2024-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search greater than (gt)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=gt2024-01-01",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "gt2024-01-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search less than (lt)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=lt2024-12-31",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "lt2024-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search greater than or equal (ge)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=ge2024-06-01",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "ge2024-06-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search less than or equal (le)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=le2024-06-30",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "le2024-06-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search not equal (ne)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Patients/search?birthDate=ne2024-01-01",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "api", "Patients", "search" ],
+              "query": [
+                {
+                  "key": "birthDate",
+                  "value": "ne2024-01-01"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:7000",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

@@ -37,35 +37,54 @@ namespace BirthCenter.Infrastructure.Services
                 }
             }
 
-            // YYYY, YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss
-            if (DateTime.TryParse(param, out var exactDate))
+            // 2. Проверяем частичные даты по длине строки
+            if (param.Length == 4 && int.TryParse(param, out var year))
             {
-                result.ExactDate = exactDate;
-                result.IsPartial = param.Length < 10; // меньше чем YYYY-MM-DD
+                // YYYY
+                result.IsPartial = true;
+                result.IsRange = true;
+                result.StartDate = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                result.EndDate = new DateTime(year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+                return result;
+            }
 
-                if (result.IsPartial)
+            if (param.Length == 7 && param.Contains('-'))
+            {
+                // YYYY-MM
+                var parts = param.Split('-');
+                if (parts.Length == 2 &&
+                    int.TryParse(parts[0], out year) &&
+                    int.TryParse(parts[1], out var month) &&
+                    month >= 1 && month <= 12)
                 {
+                    result.IsPartial = true;
                     result.IsRange = true;
-
-                    if (param.Length == 4) // YYYY
-                    {
-                        var year = int.Parse(param);
-                        result.StartDate = new DateTime(year, 1, 1, 0, 0, 0);
-                        result.EndDate = new DateTime(year, 12, 31, 23, 59, 59);
-                    }
-                    else if (param.Length == 7) // YYYY-MM
-                    {
-                        var parts = param.Split('-');
-                        var year = int.Parse(parts[0]);
-                        var month = int.Parse(parts[1]);
-                        result.StartDate = new DateTime(year, month, 1, 0, 0, 0);
-                        result.EndDate = new DateTime(year, month,
-                            DateTime.DaysInMonth(year, month), 23, 59, 59);
-                    }
+                    result.StartDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    result.EndDate = new DateTime(year, month,
+                        DateTime.DaysInMonth(year, month), 23, 59, 59, DateTimeKind.Utc);
+                    return result;
                 }
             }
 
-            return result;
+            if (param.Length == 10 && DateTime.TryParse(param, out var exactDate))
+            {
+                // YYYY-MM-DD
+                result.ExactDate = DateTime.SpecifyKind(exactDate, DateTimeKind.Utc);
+                result.IsPartial = false;
+                result.IsRange = false;
+                return result;
+            }
+
+            if (DateTime.TryParse(param, out var fullDate))
+            {
+                // Полная дата с временем
+                result.ExactDate = DateTime.SpecifyKind(fullDate, DateTimeKind.Utc);
+                result.IsPartial = false;
+                result.IsRange = false;
+                return result;
+            }
+
+            throw new ArgumentException($"Invalid date format: {param}");
         }
     }
 }

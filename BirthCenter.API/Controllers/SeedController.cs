@@ -12,6 +12,12 @@ namespace BirthCenter.API.Controllers
     {
         private readonly AppDbContext _context;
         private const int TargetPatientCount = 100;
+        private const int MinYear = 2023;
+        private const int MaxYear = 2025;
+        private const int ActiveThreshold = 90; // 90% active patients
+        private const int HoursInDay = 24;
+        private const int MinutesInHour = 60;
+        private const int SecondsInMinute = 60;
 
         public SeedController(AppDbContext context)
         {
@@ -19,7 +25,7 @@ namespace BirthCenter.API.Controllers
         }
 
         /// <summary>
-        /// Populates the database with test data (100 patients)
+        /// Populates the database with test data (100 patients) in Russian locale
         /// </summary>
         /// <returns>Number of created patients</returns>
         /// <response code="200">Returns the number of added patients</response>
@@ -38,7 +44,31 @@ namespace BirthCenter.API.Controllers
             }
 
             var needed = TargetPatientCount - existingCount;
-            var patients = GeneratePatients(needed);
+            var patients = GenerateRussianPatients(needed);
+
+            await _context.Patients.AddRangeAsync(patients);
+            await _context.SaveChangesAsync();
+
+            return Ok($"Added {needed} test patients. Total in database: {TargetPatientCount}");
+        }
+
+        /// <summary>
+        /// Ensures database has exactly 100 patients (generates if needed)
+        /// </summary>
+        /// <returns>Status message</returns>
+        [HttpPost("ensure")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<ActionResult<string>> EnsureTestData()
+        {
+            var existingCount = await _context.Patients.CountAsync();
+
+            if (existingCount >= TargetPatientCount)
+            {
+                return Ok($"Database already has {existingCount} patients. No action needed.");
+            }
+
+            var needed = TargetPatientCount - existingCount;
+            var patients = GenerateRussianPatients(needed);
 
             await _context.Patients.AddRangeAsync(patients);
             await _context.SaveChangesAsync();
@@ -75,17 +105,65 @@ namespace BirthCenter.API.Controllers
             return Ok(count);
         }
 
-        private static List<Patient> GeneratePatients(int count)
+        private static List<Patient> GenerateRussianPatients(int count)
         {
-            var rand = new Random();
-
-            var firstNames = new[] { "Ivan", "Petr", "Sidor", "Alexey", "Dmitry", "Andrey", "Mikhail", "Nikolay" };
-            var lastNames = new[] { "Ivanov", "Petrov", "Sidorov", "Alexeev", "Dmitriev", "Andreev", "Mikhailov", "Nikolaev" };
-            var patronymics = new[] { "Ivanovich", "Petrovich", "Sidorovich", "Alexeevich", "Dmitrievich", "Andreevich", "Mikhailovich", "Nikolaevich" };
-
             var patients = new List<Patient>();
 
-            for (int i = 0; i < count; i++)
+            patients.AddRange(GenerateGuaranteedDemoPatients());
+            patients.AddRange(GenerateRandomPatients(count - patients.Count));
+
+            return patients;
+        }
+
+        private static IEnumerable<Patient> GenerateGuaranteedDemoPatients()
+        {
+            return new List<Patient>
+            {
+                new(
+                    family: "Иванов",
+                    birthDate: new DateTime(2024, 1, 13, 18, 25, 43, DateTimeKind.Utc),
+                    gender: Gender.Male,
+                    active: true,
+                    use: "official",
+                    given: new List<string> { "Иван", "Иванович" }
+                ),
+                new(
+                    family: "Петров",
+                    birthDate: new DateTime(2023, 5, 15, 10, 30, 0, DateTimeKind.Utc),
+                    gender: Gender.Male,
+                    active: true,
+                    use: "official",
+                    given: new List<string> { "Петр", "Петрович" }
+                ),
+                new(
+                    family: "Сидорова",
+                    birthDate: new DateTime(2024, 8, 20, 14, 45, 0, DateTimeKind.Utc),
+                    gender: Gender.Female,
+                    active: true,
+                    use: "official",
+                    given: new List<string> { "Анна", "Сидоровна" }
+                ),
+                new(
+                    family: "Алексеев",
+                    birthDate: new DateTime(2025, 3, 10, 9, 15, 0, DateTimeKind.Utc),
+                    gender: Gender.Male,
+                    active: false,
+                    use: "official",
+                    given: new List<string> { "Алексей", "Алексеевич" }
+                )
+            };
+        }
+
+        private static List<Patient> GenerateRandomPatients(int count)
+        {
+            var rand = new Random();
+            var patients = new List<Patient>();
+
+            var firstNames = new[] { "Иван", "Петр", "Сидор", "Алексей", "Дмитрий", "Андрей", "Михаил", "Николай" };
+            var lastNames = new[] { "Иванов", "Петров", "Сидоров", "Алексеев", "Дмитриев", "Андреев", "Михайлов", "Николаев" };
+            var patronymics = new[] { "Иванович", "Петрович", "Сидорович", "Алексеевич", "Дмитриевич", "Андреевич", "Михайлович", "Николаевич" };
+
+            for (var i = 0; i < count; i++)
             {
                 var firstName = firstNames[rand.Next(firstNames.Length)];
                 var lastName = lastNames[rand.Next(lastNames.Length)];
@@ -99,12 +177,12 @@ namespace BirthCenter.API.Controllers
                     _ => Gender.Unknown
                 };
 
-                var year = 2023 + rand.Next(2);
+                var year = rand.Next(MinYear, MaxYear + 1);
                 var month = rand.Next(1, 13);
                 var day = rand.Next(1, DateTime.DaysInMonth(year, month) + 1);
-                var hour = rand.Next(0, 24);
-                var minute = rand.Next(0, 60);
-                var second = rand.Next(0, 60);
+                var hour = rand.Next(0, HoursInDay);
+                var minute = rand.Next(0, MinutesInHour);
+                var second = rand.Next(0, SecondsInMinute);
 
                 var birthDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
 
@@ -112,7 +190,7 @@ namespace BirthCenter.API.Controllers
                     family: lastName,
                     birthDate: birthDate,
                     gender: gender,
-                    active: rand.Next(100) > 10,
+                    active: rand.Next(100) < ActiveThreshold,
                     use: "official",
                     given: new List<string> { firstName, patronymic }
                 );
