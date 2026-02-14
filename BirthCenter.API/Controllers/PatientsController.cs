@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BirthCenter.Application.DTO;
 using BirthCenter.Application.Interfaces;
 
@@ -26,7 +22,7 @@ namespace BirthCenter.API.Controllers
         /// <param name="id">Patient unique identifier</param>
         /// <returns>Patient information</returns>
         /// <response code="200">Returns the patient</response>
-        /// <response code="404">Patient not found</response>
+        /// <response code="404"> Not found</response>
         /// <response code="500">Internal server error</response>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(PatientDto), StatusCodes.Status200OK)]
@@ -52,7 +48,7 @@ namespace BirthCenter.API.Controllers
         }
 
         /// <summary>
-        /// Search patients by birth date (FHIR format)
+        /// Search patients by birthdate (FHIR format)
         /// </summary>
         /// <param name="birthDate">Date parameter with FHIR prefixes (eq, gt, lt, ge, le) and partial dates (2024, 2024-01)</param>
         /// <returns>List of patients matching the date criteria</returns>
@@ -75,19 +71,22 @@ namespace BirthCenter.API.Controllers
         /// <summary>
         /// Create new patient
         /// </summary>
-        /// <param name="request">Patient data. 
-        /// Пример: 
-        /// {
-        ///   "name": {
-        ///     "use": "official",
-        ///     "family": "Иванов",
-        ///     "given": ["Иван", "Иванович"]
-        ///   },
-        ///   "gender": "male",
-        ///   "birthDate": "2024-01-13T18:25:43",
-        ///   "active": true
-        /// }
-        /// </param>
+        /// <param name="request">Patient data</param>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/Patients
+        ///     {
+        ///         "name": {
+        ///             "use": "official",
+        ///             "family": "Иванов",
+        ///             "given": ["Иван", "Иванович"]
+        ///         },
+        ///         "gender": "male",
+        ///         "birthDate": "2024-01-13T18:25:43",
+        ///         "active": true
+        ///     }
+        /// </remarks>
         /// <returns>Created patient</returns>
         /// <response code="201">Patient created successfully</response>
         /// <response code="400">Invalid request data</response>
@@ -104,7 +103,26 @@ namespace BirthCenter.API.Controllers
         /// Update existing patient
         /// </summary>
         /// <param name="id">Patient unique identifier</param>
-        /// <param name="request">Updated patient data</param>
+        /// <param name="request">Updated patient data (all fields are optional)</param>
+        /// <remarks>
+        /// Sample request - all fields are optional. You can send only the fields you want to update:
+        /// 
+        ///     PUT /api/Patients/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        ///     {
+        ///         "gender": "female"
+        ///     }
+        ///     
+        /// Or update multiple fields:
+        /// 
+        ///     PUT /api/Patients/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        ///     {
+        ///         "name": {
+        ///             "family": "Петров",
+        ///             "given": ["Петр", "Петрович"]
+        ///         },
+        ///         "active": false
+        ///     }
+        /// </remarks>
         /// <returns>Updated patient</returns>
         /// <response code="200">Patient updated successfully</response>
         /// <response code="400">Invalid request data</response>
