@@ -11,6 +11,7 @@ namespace BirthCenter.API.Controllers
     public class SeedController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private const int TargetPatientCount = 100;
 
         public SeedController(AppDbContext context)
         {
@@ -18,58 +19,69 @@ namespace BirthCenter.API.Controllers
         }
 
         /// <summary>
-        /// Наполняет БД тестовыми данными (100 пациентов)
+        /// Populates the database with test data (100 patients)
         /// </summary>
-        /// <returns>Количество созданных пациентов</returns>
+        /// <returns>Number of created patients</returns>
+        /// <response code="200">Returns the number of added patients</response>
+        /// <response code="400">If database already has 100 or more patients</response>
         [HttpPost("generate")]
-        public async Task<ActionResult<int>> GenerateTestData()
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<string>> GenerateTestData()
         {
             var existingCount = await _context.Patients.CountAsync();
 
-            if (existingCount >= 100)
+            if (existingCount >= TargetPatientCount)
             {
-                return Ok($"В БД уже {existingCount} пациентов. Тестовые данные не добавлены.");
+                return BadRequest($"Database already has {existingCount} patients. " +
+                                 $"Target is {TargetPatientCount}. Test data not added.");
             }
 
-            var needed = 100 - existingCount;
+            var needed = TargetPatientCount - existingCount;
             var patients = GeneratePatients(needed);
 
             await _context.Patients.AddRangeAsync(patients);
             await _context.SaveChangesAsync();
 
-            return Ok($"Добавлено {needed} тестовых пациентов. Всего в БД: 100");
+            return Ok($"Added {needed} test patients. Total in database: {TargetPatientCount}");
         }
 
         /// <summary>
-        /// Удаляет все тестовые данные
+        /// Removes all test data from the database
         /// </summary>
+        /// <returns>Number of deleted patients</returns>
         [HttpDelete("clear")]
-        public async Task<IActionResult> ClearTestData()
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<ActionResult<string>> ClearTestData()
         {
             var patients = await _context.Patients.ToListAsync();
+            var count = patients.Count;
+
             _context.Patients.RemoveRange(patients);
             await _context.SaveChangesAsync();
 
-            return Ok($"Удалено {patients.Count} пациентов");
+            return Ok($"Deleted {count} patients from database");
         }
 
         /// <summary>
-        /// Проверяет текущее количество пациентов
+        /// Gets the current number of patients in the database
         /// </summary>
+        /// <returns>Number of patients</returns>
         [HttpGet("count")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         public async Task<ActionResult<int>> GetCount()
         {
             var count = await _context.Patients.CountAsync();
             return Ok(count);
         }
 
-        private List<Patient> GeneratePatients(int count)
+        private static List<Patient> GeneratePatients(int count)
         {
             var rand = new Random();
 
-            var firstNames = new[] { "Иван", "Петр", "Сидор", "Алексей", "Дмитрий", "Андрей", "Михаил", "Николай" };
-            var lastNames = new[] { "Иванов", "Петров", "Сидоров", "Алексеев", "Дмитриев", "Андреев", "Михайлов", "Николаев" };
-            var patronymics = new[] { "Иванович", "Петрович", "Сидорович", "Алексеевич", "Дмитриевич", "Андреевич", "Михайлович", "Николаевич" };
+            var firstNames = new[] { "Ivan", "Petr", "Sidor", "Alexey", "Dmitry", "Andrey", "Mikhail", "Nikolay" };
+            var lastNames = new[] { "Ivanov", "Petrov", "Sidorov", "Alexeev", "Dmitriev", "Andreev", "Mikhailov", "Nikolaev" };
+            var patronymics = new[] { "Ivanovich", "Petrovich", "Sidorovich", "Alexeevich", "Dmitrievich", "Andreevich", "Mikhailovich", "Nikolaevich" };
 
             var patients = new List<Patient>();
 
