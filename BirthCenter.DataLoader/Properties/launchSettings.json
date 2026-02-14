@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BirthCenter.DataLoader": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
