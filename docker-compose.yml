@@ -7,19 +7,28 @@ services:
       context: .
       dockerfile: BirthCenter.API/Dockerfile
     container_name: birthcenter_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=birthcenter;Username=postgres;Password=postgres
+    ports:
+      - "7000:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - birthcenter_network
 
   postgres:
     image: postgres:15-alpine
-    restart: unless-stopped
     container_name: birthcenter_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: birthcenter
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

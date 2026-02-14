@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using BirthCenter.Domain.Entities;
+﻿using BirthCenter.Domain.Entities;
 
 namespace BirthCenter.Application.Interfaces
 {

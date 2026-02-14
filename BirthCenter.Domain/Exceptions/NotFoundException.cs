@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace BirthCenter.Domain.Exceptions
 {
     public class NotFoundException : DomainException
