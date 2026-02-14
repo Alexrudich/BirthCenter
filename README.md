@@ -41,7 +41,7 @@ The application will start with:
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/Alexrudich/BirthCenter.git
 cd BirthCenter
 
 # Start all services
