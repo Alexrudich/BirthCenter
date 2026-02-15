@@ -36,20 +36,71 @@ namespace BirthCenter.Domain.Entities
         }
 
         public void Update(
-            string family = null,
+            string? family = null,
             DateTime? birthDate = null,
             Gender? gender = null,
             bool? active = null,
-            string use = null,
+            string? use = null,
             List<string>? given = null)
         {
-            Family = family ?? Family;
-            BirthDate = birthDate ?? BirthDate;
-            Gender = gender ?? Gender;
-            Active = active ?? Active;
-            Use = use ?? Use;
-            if (given != null)
-                Given = given.AsReadOnly();
+            UpdateFamily(family);
+            UpdateUse(use);
+            UpdateBirthDate(birthDate);
+            UpdateGender(gender);
+            UpdateActive(active);
+            UpdateGiven(given);
+        }
+
+        private void UpdateFamily(string? newFamily)
+        {
+            if (newFamily == null) return;
+
+            ValidateFamily(newFamily);
+            Family = newFamily;
+        }
+
+        private void UpdateUse(string? newUse)
+        {
+            if (newUse == null) return;
+
+            ValidateUse(newUse);
+            Use = newUse;
+        }
+
+        private void UpdateBirthDate(DateTime? newBirthDate)
+        {
+            if (newBirthDate.HasValue)
+                BirthDate = newBirthDate.Value;
+        }
+
+        private void UpdateGender(Gender? newGender)
+        {
+            if (newGender.HasValue)
+                Gender = newGender.Value;
+        }
+
+        private void UpdateActive(bool? newActive)
+        {
+            if (newActive.HasValue)
+                Active = newActive.Value;
+        }
+
+        private void UpdateGiven(List<string>? newGiven)
+        {
+            if (newGiven != null)
+                Given = newGiven.AsReadOnly();
+        }
+
+        private static void ValidateFamily(string family)
+        {
+            if (string.IsNullOrWhiteSpace(family))
+                throw new ArgumentException("Family cannot be empty", nameof(family));
+        }
+
+        private static void ValidateUse(string use)
+        {
+            if (string.IsNullOrWhiteSpace(use))
+                throw new ArgumentException("Use cannot be empty", nameof(use));
         }
     }
 }
