@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using BirthCenter.Domain.Enums;
+using BirthCenter.Domain.Specifications;
 
 namespace BirthCenter.Infrastructure.Services
 {
     public static class FhirDateParser
     {
-        private static readonly string[] Prefixes = { "eq", "ne", "gt", "lt", "ge", "le", "sa", "eb", "ap" };
-
-        public class DateSearchCriteria
-        {
-            public string Prefix { get; set; } = "eq"; // по умолчанию exact match
-            public DateTime? ExactDate { get; set; }
-            public DateTime? StartDate { get; set; }
-            public DateTime? EndDate { get; set; }
-            public bool IsPartial { get; set; }
-            public bool IsRange { get; set; }
-        }
+        // Constants for date formats
+        private const int YearLength = 4;
+        private const int YearMonthLength = 7;
+        private const int FullDateLength = 10;
 
         public static DateSearchCriteria Parse(string dateParam)
         {
@@ -26,65 +18,93 @@ namespace BirthCenter.Infrastructure.Services
             var result = new DateSearchCriteria();
             var param = dateParam.Trim();
 
-            // 1. Определяем префикс
-            foreach (var prefix in Prefixes)
+            ParsePrefix(result, ref param);
+            return ParseDateByFormat(param, result);
+        }
+
+        private static void ParsePrefix(DateSearchCriteria result, ref string param)
+        {
+            foreach (var prefix in DatePrefixExtensions.AllPrefixStrings)
             {
                 if (param.StartsWith(prefix))
                 {
-                    result.Prefix = prefix;
+                    result.Prefix = prefix.ParsePrefix();
                     param = param.Substring(prefix.Length);
                     break;
                 }
             }
+        }
 
-            // 2. Проверяем частичные даты по длине строки
-            if (param.Length == 4 && int.TryParse(param, out var year))
+        private static DateSearchCriteria ParseDateByFormat(string param, DateSearchCriteria result)
+        {
+            // Year only (YYYY)
+            if (param.Length == YearLength && int.TryParse(param, out var year))
             {
-                // YYYY
-                result.IsPartial = true;
-                result.IsRange = true;
-                result.StartDate = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                result.EndDate = new DateTime(year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
-                return result;
+                return CreateYearRange(result, year);
             }
 
-            if (param.Length == 7 && param.Contains('-'))
+            // Year-month (YYYY-MM)
+            if (param.Length == YearMonthLength && param.Contains('-'))
             {
-                // YYYY-MM
-                var parts = param.Split('-');
-                if (parts.Length == 2 &&
-                    int.TryParse(parts[0], out year) &&
-                    int.TryParse(parts[1], out var month) &&
-                    month >= 1 && month <= 12)
-                {
-                    result.IsPartial = true;
-                    result.IsRange = true;
-                    result.StartDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
-                    result.EndDate = new DateTime(year, month,
-                        DateTime.DaysInMonth(year, month), 23, 59, 59, DateTimeKind.Utc);
-                    return result;
-                }
+                return ParseYearMonth(param, result);
             }
 
-            if (param.Length == 10 && DateTime.TryParse(param, out var exactDate))
+            // Full date (YYYY-MM-DD)
+            if (param.Length == FullDateLength && DateTime.TryParse(param, out var exactDate))
             {
-                // YYYY-MM-DD
-                result.ExactDate = DateTime.SpecifyKind(exactDate, DateTimeKind.Utc);
-                result.IsPartial = false;
-                result.IsRange = false;
-                return result;
+                return CreateExactDate(result, exactDate);
             }
 
+            // Full date with time
             if (DateTime.TryParse(param, out var fullDate))
             {
-                // Полная дата с временем
-                result.ExactDate = DateTime.SpecifyKind(fullDate, DateTimeKind.Utc);
-                result.IsPartial = false;
-                result.IsRange = false;
-                return result;
+                return CreateExactDate(result, fullDate);
             }
 
             throw new ArgumentException($"Invalid date format: {param}");
         }
+
+        private static DateSearchCriteria ParseYearMonth(string param, DateSearchCriteria result)
+        {
+            var parts = param.Split('-');
+
+            if (parts.Length != 2 ||
+                !int.TryParse(parts[0], out var year) ||
+                !int.TryParse(parts[1], out var month) ||
+                !IsValidMonth(month))
+            {
+                throw new ArgumentException($"Invalid year-month format: {param}");
+            }
+
+            result.IsPartial = true;
+            result.IsRange = true;
+            result.StartDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            result.EndDate = new DateTime(year, month,
+                DateTime.DaysInMonth(year, month), 23, 59, 59, DateTimeKind.Utc);
+
+            return result;
+        }
+
+        private static DateSearchCriteria CreateYearRange(DateSearchCriteria result, int year)
+        {
+            result.IsPartial = true;
+            result.IsRange = true;
+            result.StartDate = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            result.EndDate = new DateTime(year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+
+            return result;
+        }
+
+        private static DateSearchCriteria CreateExactDate(DateSearchCriteria result, DateTime date)
+        {
+            result.ExactDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            result.IsPartial = false;
+            result.IsRange = false;
+
+            return result;
+        }
+
+        private static bool IsValidMonth(int month)
+            => month >= 1 && month <= 12;
     }
 }
