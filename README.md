@@ -151,7 +151,7 @@ cd BirthCenter.API
 dotnet run
 ```
 
-### Run tests (if any)
+### Run tests
 ```bash
 dotnet test
 ```
