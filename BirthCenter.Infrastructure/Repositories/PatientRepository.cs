@@ -1,11 +1,10 @@
 ﻿using BirthCenter.Application.Interfaces;
 using BirthCenter.Domain.Entities;
+using BirthCenter.Domain.Enums;
+using BirthCenter.Domain.Specifications;
 using BirthCenter.Infrastructure.Data;
 using BirthCenter.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BirthCenter.Infrastructure.Repositories
 {
@@ -33,69 +32,71 @@ namespace BirthCenter.Infrastructure.Repositories
             var criteria = FhirDateParser.Parse(dateSearchParam);
             var query = _context.Patients.AsQueryable();
 
-            if (criteria.IsRange && criteria.StartDate.HasValue && criteria.EndDate.HasValue)
-            {
-                // Диапазон для частичных дат
-                switch (criteria.Prefix)
-                {
-                    case "eq":
-                        query = query.Where(p => p.BirthDate >= criteria.StartDate &&
-                                                p.BirthDate <= criteria.EndDate);
-                        break;
-                    case "ne":
-                        query = query.Where(p => p.BirthDate < criteria.StartDate ||
-                                                p.BirthDate > criteria.EndDate);
-                        break;
-                    case "gt":
-                        query = query.Where(p => p.BirthDate > criteria.EndDate);
-                        break;
-                    case "lt":
-                        query = query.Where(p => p.BirthDate < criteria.StartDate);
-                        break;
-                    case "ge":
-                        query = query.Where(p => p.BirthDate >= criteria.StartDate);
-                        break;
-                    case "le":
-                        query = query.Where(p => p.BirthDate <= criteria.EndDate);
-                        break;
-                    default:
-                        query = query.Where(p => p.BirthDate >= criteria.StartDate &&
-                                                p.BirthDate <= criteria.EndDate);
-                        break;
-                }
-            }
-            else if (criteria.ExactDate.HasValue)
-            {
-                // Точная дата
-                var date = criteria.ExactDate.Value;
-
-                switch (criteria.Prefix)
-                {
-                    case "eq":
-                        query = query.Where(p => p.BirthDate.Date == date.Date);
-                        break;
-                    case "ne":
-                        query = query.Where(p => p.BirthDate.Date != date.Date);
-                        break;
-                    case "gt":
-                        query = query.Where(p => p.BirthDate > date);
-                        break;
-                    case "lt":
-                        query = query.Where(p => p.BirthDate < date);
-                        break;
-                    case "ge":
-                        query = query.Where(p => p.BirthDate >= date);
-                        break;
-                    case "le":
-                        query = query.Where(p => p.BirthDate <= date);
-                        break;
-                    default:
-                        query = query.Where(p => p.BirthDate.Date == date.Date);
-                        break;
-                }
-            }
+            query = criteria.IsRange
+                ? ApplyRangeFilter(query, criteria)
+                : ApplyExactDateFilter(query, criteria);
 
             return await query.ToListAsync();
+        }
+
+        private static IQueryable<Patient> ApplyRangeFilter(IQueryable<Patient> query, DateSearchCriteria criteria)
+        {
+            if (!criteria.StartDate.HasValue || !criteria.EndDate.HasValue)
+                return query;
+
+            return criteria.Prefix switch
+            {
+                DatePrefix.Eq =>
+                    query.Where(p => p.BirthDate >= criteria.StartDate && p.BirthDate <= criteria.EndDate),
+
+                DatePrefix.Ne =>
+                    query.Where(p => p.BirthDate < criteria.StartDate || p.BirthDate > criteria.EndDate),
+
+                DatePrefix.Gt =>
+                    query.Where(p => p.BirthDate > criteria.EndDate),
+
+                DatePrefix.Lt =>
+                    query.Where(p => p.BirthDate < criteria.StartDate),
+
+                DatePrefix.Ge =>
+                    query.Where(p => p.BirthDate >= criteria.StartDate),
+
+                DatePrefix.Le =>
+                    query.Where(p => p.BirthDate <= criteria.EndDate),
+
+                _ => query.Where(p => p.BirthDate >= criteria.StartDate && p.BirthDate <= criteria.EndDate)
+            };
+        }
+
+        private static IQueryable<Patient> ApplyExactDateFilter(IQueryable<Patient> query, DateSearchCriteria criteria)
+        {
+            if (!criteria.ExactDate.HasValue)
+                return query;
+
+            var date = criteria.ExactDate.Value;
+
+            return criteria.Prefix switch
+            {
+                DatePrefix.Eq =>
+                    query.Where(p => p.BirthDate.Date == date.Date),
+
+                DatePrefix.Ne =>
+                    query.Where(p => p.BirthDate.Date != date.Date),
+
+                DatePrefix.Gt =>
+                    query.Where(p => p.BirthDate > date),
+
+                DatePrefix.Lt =>
+                    query.Where(p => p.BirthDate < date),
+
+                DatePrefix.Ge =>
+                    query.Where(p => p.BirthDate >= date),
+
+                DatePrefix.Le =>
+                    query.Where(p => p.BirthDate <= date),
+
+                _ => query.Where(p => p.BirthDate.Date == date.Date)
+            };
         }
 
         public async Task<Patient> AddAsync(Patient patient)
