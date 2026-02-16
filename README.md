@@ -100,11 +100,11 @@ Collection includes:
 
 ```
 BirthCenter/
-├── BirthCenter.API/          # Web API layer
-├── BirthCenter.Application/   # Use cases and DTOs
-├── BirthCenter.Domain/        # Entities and enums
-├── BirthCenter.Infrastructure/# Data access and repositories
-├── BirthCenter.Shared/         # Shared utilities
+├── BirthCenter.API/ # Web API layer (controllers, middleware)
+├── BirthCenter.Application/ # Use cases, DTOs, interfaces
+├── BirthCenter.Domain/ # Entities, enums, specifications
+├── BirthCenter.Infrastructure/# Data access, repositories, services
+├── BirthCenter.Tests/ # Unit tests (domain, application, API)
 ├── BirthCenter.sln
 ├── docker-compose.yml
 ├── .dockerignore
